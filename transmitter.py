@@ -40,6 +40,10 @@ def to_bytes(sequence: Bitsequence, length: int) -> bytes:
         byte_acc = []
     return bytes_acc
 
+def to_file(file: IO[str], sequence: Bitsequence):
+    for bit in sequence:
+        file.write('1' if bit else '0')
+
 def stuffed(sequence: Bitsequence, max_sequence: int) -> Bitsequence:
     len = 0
     last_bit = False
