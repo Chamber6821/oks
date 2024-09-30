@@ -1,7 +1,7 @@
 #!/bin/python3.12
 from io import TextIOWrapper
 import sys, os
-from typing import IO, Generator
+from typing import IO, Generator, List
 
 MAX_DATA_LENGTH = 22 + 1
 FLAG = 22
@@ -44,32 +44,24 @@ def to_file(file: IO[str], sequence: Bitsequence):
     for bit in sequence:
         file.write('1' if bit else '0')
 
-def stuffed(sequence: Bitsequence, max_sequence: int) -> Bitsequence:
-    len = 0
-    last_bit = False
+def stuffed(sequence: Bitsequence, flag: List[bool]) -> Bitsequence:
+    window = []
     for bit in sequence:
-        if bit == last_bit:
-            len += 1
-        else:
-            len = 1
-            last_bit = bit
-        if len > max_sequence:
-            len = 1
-            yield not bit
+        window = window[-len(flag) + 1:]
+        if window == flag[:-1]:
+            window = [not flag[-1]]
+            yield not flag[-1]
+        window.append(bit)
         yield bit
 
-def unstuffed(sequence: Bitsequence, max_sequence: int) -> Bitsequence:
-    len = 0
-    last_bit = False
+def unstuffed(sequence: Bitsequence, flag: List[bool]) -> Bitsequence:
+    window = []
     for bit in sequence:
-        if bit == last_bit:
-            len += 1
-        else:
-            len = 1
-            last_bit = bit
-        if len >= max_sequence:
-            len = 1
+        window = window[-len(flag) + 1:]
+        if window == flag[:-1]:
+            window = [not flag[-1]]
             continue
+        window.append(bit)
         yield bit
 
 class Packet:
@@ -111,12 +103,13 @@ def unpack(packet: bytes):
 
 
 data = bytes([0x1, 0x3, 0x7])
+flag = [False, False, False]
 def pr(seq: Bitsequence): print(''.join(map(lambda x: '01'[x], seq)))
 print(data)
 pr(from_bytes(data))
 print(to_bytes(from_bytes(data), 3))
-pr(stuffed(from_bytes(data), 4))
-pr(unstuffed(stuffed(from_bytes(data), 4), 4))
+pr(stuffed(from_bytes(data), flag))
+pr(unstuffed(stuffed(from_bytes(data), flag), flag))
 
 my_pack = pack(
     source_address=0,
