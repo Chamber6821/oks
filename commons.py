@@ -1,4 +1,5 @@
 from typing import IO, Generator, List
+from dataclasses import dataclass
 
 
 Bitsequence = Generator[bool, None, None]
@@ -101,10 +102,16 @@ def pack(*, source_address: int, destination_address: int, data: bytes) -> bytes
         + fcs.to_bytes())
 
 
-def unpack(packet: bytes, data_length: int):
-    return {
-        'source_address': as_int(packet[0:3]),
-        'destination_address': as_int(packet[4:7]),
-        'data': packet[8:8 + data_length]
-    }
+@dataclass
+class Packet:
+    source_address: int
+    destination_address: int
+    data: bytes
+
+def unpack(packet: bytes, data_length: int) -> Packet:
+    return Packet(
+        source_address=as_int(packet[0:3]),
+        destination_address=as_int(packet[4:7]),
+        data=packet[8:8 + data_length]
+    )
 
