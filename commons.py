@@ -60,6 +60,15 @@ def to_file(file: IO[str], sequence: Bitsequence):
         file.write('1' if bit else '0')
 
 
+def wait_flag(sequence: Bitsequence, flag: List[bool]):
+    window = []
+    for bit in sequence:
+        window.append(bit)
+        window = window[-len(flag):]
+        if window == flag:
+            return
+
+
 def stuffed(sequence: Bitsequence, flag: List[bool]) -> Bitsequence:
     window = []
     for bit in sequence:
@@ -84,7 +93,7 @@ def unstuffed(sequence: Bitsequence, flag: List[bool]) -> Bitsequence:
 
 def broken_pipe(sequence: Bitsequence, inversion_chance: float) -> Bitsequence:
     for bit in sequence:
-        yield bit != (random() <= inversion_chance)
+        yield bit != (random() < inversion_chance)
 
 
 class Sniffer:
