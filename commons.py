@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import math
 from functools import reduce
 
+from config import ADDRESS_LEN
+
 
 Bitsequence = Generator[bool, None, None]
 
@@ -110,8 +112,8 @@ def hamming_code(data: List[bool]) -> Generator[bool, None, None]:
 
 
 def pack(*, source_address: int, destination_address: int, data: bytes) -> bytes:
-    return (source_address.to_bytes(4, byteorder='little')
-        + destination_address.to_bytes(4, byteorder='little')
+    return (source_address.to_bytes(ADDRESS_LEN, byteorder='little')
+        + destination_address.to_bytes(ADDRESS_LEN, byteorder='little')
         + data
         + as_bytes(list(hamming_code(as_bits(data)))))
 
@@ -121,13 +123,20 @@ class Packet:
     source_address: int
     destination_address: int
     data: bytes
-    fcs: bytes
+    original_fcs: bytes
+    calculated_fcs: bytes
+
 
 def unpack(packet: bytes, data_length: int) -> Packet:
     return Packet(
-        source_address=as_int(packet[0:3]),
-        destination_address=as_int(packet[4:7]),
-        data=packet[8:8 + data_length],
-        fcs=packet[8 + data_length:]
+        source_address=as_int(packet[:ADDRESS_LEN - 1]),
+        destination_address=as_int(packet[ADDRESS_LEN:2*ADDRESS_LEN - 1]),
+        data=packet[2*ADDRESS_LEN:2*ADDRESS_LEN + data_length],
+        original_fcs=packet[2*ADDRESS_LEN + data_length:],
+        calculated_fcs=as_bytes(list(hamming_code(as_bits(packet[2*ADDRESS_LEN:2*ADDRESS_LEN + data_length]))))
     )
+
+
+def beautiful_print(prefix, *args):
+    print(f'\033[7m{(str(prefix) + " " * 999)[:6]}\033[0m', *args)
 
