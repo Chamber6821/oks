@@ -2,6 +2,7 @@ from typing import IO, Generator, List
 from dataclasses import dataclass
 import math
 from functools import reduce
+from random import random
 
 from config import ADDRESS_LEN
 
@@ -81,6 +82,11 @@ def unstuffed(sequence: Bitsequence, flag: List[bool]) -> Bitsequence:
         yield bit
 
 
+def broken_pipe(sequence: Bitsequence, inversion_chance: float) -> Bitsequence:
+    for bit in sequence:
+        yield bit != (random() <= inversion_chance)
+
+
 class Sniffer:
     def __init__(self, sequence: Bitsequence):
         self._sequence = sequence
@@ -139,4 +145,5 @@ def unpack(packet: bytes, data_length: int) -> Packet:
 
 def beautiful_print(prefix, *args):
     print(f'\033[7m{(str(prefix) + " " * 999)[:6]}\033[0m', *args)
+
 
