@@ -1,5 +1,7 @@
 from typing import IO, Generator, List
 from dataclasses import dataclass
+import math
+from functools import reduce
 
 
 Bitsequence = Generator[bool, None, None]
@@ -94,12 +96,24 @@ class Sniffer:
         return self._buffer
 
 
+def hamming_code(data: List[bool]) -> Generator[bool, None, None]:
+    for power in range(0, math.ceil(math.log2(len(data) + 1))):
+        step = 2**power
+        yield reduce(
+            lambda a, b: a != b,
+            [
+                data[i]
+                for b in range(step - 1, len(data), step * 2)
+                for i in range(b, min(b + step, len(data)))
+            ]
+        )
+
+
 def pack(*, source_address: int, destination_address: int, data: bytes) -> bytes:
-    fcs = 0
     return (source_address.to_bytes(4, byteorder='little')
         + destination_address.to_bytes(4, byteorder='little')
         + data
-        + fcs.to_bytes())
+        + as_bytes(list(hamming_code(as_bits(data)))))
 
 
 @dataclass
@@ -107,11 +121,13 @@ class Packet:
     source_address: int
     destination_address: int
     data: bytes
+    fcs: bytes
 
 def unpack(packet: bytes, data_length: int) -> Packet:
     return Packet(
         source_address=as_int(packet[0:3]),
         destination_address=as_int(packet[4:7]),
-        data=packet[8:8 + data_length]
+        data=packet[8:8 + data_length],
+        fcs=packet[8 + data_length:]
     )
 
