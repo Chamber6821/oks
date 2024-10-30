@@ -147,3 +147,7 @@ def beautiful_print(prefix, *args):
     print(f'\033[7m{(str(prefix) + " " * 999)[:6]}\033[0m', *args)
 
 
+def beautiful_bits(bits: list[bool]) -> str:
+    return ''.join(map(lambda x: '01'[x], bits))
+    
+

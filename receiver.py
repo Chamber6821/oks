@@ -2,12 +2,8 @@
 
 import sys
 
-from commons import Sniffer, as_bits, beautiful_print, from_file, to_bytes, unpack, unstuffed
+from commons import Sniffer, as_bits, beautiful_bits, beautiful_print, from_file, to_bytes, unpack, unstuffed
 from config import ADDRESS_LEN, FCS_SIZE, FLAG, MAX_DATA_LENGTH
-
-def beautiful_bits(bits: list[bool]) -> str:
-    return ''.join(map(lambda x: '01'[x], bits))
-    
 
 with open(sys.argv[1], 'r') as f:
     while True:
