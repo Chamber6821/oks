@@ -27,7 +27,7 @@ with open(sys.argv[1], 'r') as f:
         error_code = as_bytes([a != b for a, b in zip(as_bits(packet.original_fcs), as_bits(packet.calculated_fcs))])
         error_position = sum([2**i if b else 0 for i, b in enumerate(as_bits(error_code))]) - 1
         print('-' * (6 + 2*ADDRESS_LEN * 8),'-' * (error_position + 1),  '^', sep='')
-        if error_position > MAX_DATA_LENGTH * 8:
+        if error_position >= MAX_DATA_LENGTH * 8:
             print('Corrupted :(')
         elif error_position > -1:
             bits = as_bits(packet.data)
