@@ -21,4 +21,4 @@ with open(sys.argv[1], 'w') as f:
             to_file(f, broken_pipe(sniffer.sequence(), 0.6 / (MESSAGE_SIZE * 8)))
             f.flush()
             print(message_part)
-            beautiful_print('RAW', beautiful_bits(list(from_bytes(FLAG)) + sniffer.buffer()))
+            beautiful_print('RAW', beautiful_bits(sniffer.buffer()))
