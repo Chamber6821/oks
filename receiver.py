@@ -21,9 +21,9 @@ with open(sys.argv[1], 'r') as f:
             MAX_DATA_LENGTH
         )
         print(packet.data)
-        beautiful_print('RAW',  beautiful_bits(sniffed.buffer()))
         beautiful_print('FCS Or', beautiful_bits(as_bits(packet.original_fcs)))
         beautiful_print('FCS Ca', beautiful_bits(as_bits(packet.calculated_fcs)))
+        beautiful_print('RAW',  beautiful_bits(sniffed.buffer()))
         error_code = as_bytes([a != b for a, b in zip(as_bits(packet.original_fcs), as_bits(packet.calculated_fcs))])
         error_position = sum([2**i if b else 0 for i, b in enumerate(as_bits(error_code))]) - 1
         print('-' * (6 + 2*ADDRESS_LEN * 8),'-' * (error_position + 1),  '^', sep='')
@@ -33,5 +33,7 @@ with open(sys.argv[1], 'r') as f:
             bits = as_bits(packet.data)
             bits[error_position] = not bits[error_position]
             print('Repaired:', as_bytes(bits))
+        else:
+            print('Ok')
         
 
