@@ -96,6 +96,12 @@ def broken_pipe(sequence: Bitsequence, inversion_chance: float) -> Bitsequence:
         yield bit != (random() < inversion_chance)
 
 
+def chain(*sequences: Bitsequence) -> Bitsequence:
+    for seq in sequences:
+        for bit in seq:
+            yield bit
+
+
 class Sniffer:
     def __init__(self, sequence: Bitsequence):
         self._sequence = sequence
