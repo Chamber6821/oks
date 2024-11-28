@@ -1,10 +1,11 @@
+import re
 from typing import IO, Generator, List
 from dataclasses import dataclass
 import math
 from functools import reduce
 from random import random
 
-from config import ADDRESS_LEN
+from config import ADDRESS_LEN, MAX_DATA_LENGTH
 
 
 Bitsequence = Generator[bool, None, None]
@@ -145,16 +146,38 @@ class Packet:
     destination_address: int
     data: bytes
     original_fcs: bytes
-    calculated_fcs: bytes
+
+    def __init__(
+        self, 
+        *, 
+        source_address: int,
+        destination_address: int,
+        data: bytes,
+        original_fcs: bytes = bytes()
+    ):
+        self.source_address = source_address
+        self.destination_address = destination_address
+        self.data = data
+        self.original_fcs = original_fcs
+
+    def as_bytes(self):
+        data = (self.data[:MAX_DATA_LENGTH] + bytes([0] * MAX_DATA_LENGTH))[:MAX_DATA_LENGTH]
+        return (self.source_address.to_bytes(ADDRESS_LEN, byteorder='little')
+            + self.destination_address.to_bytes(ADDRESS_LEN, byteorder='little')
+            + data 
+            + self.calculated_fcs)
+
+    @property
+    def calculated_fcs(self):
+        return as_bytes(list(hamming_code(as_bits(self.data[:len(self.data)]))))
 
 
-def unpack(packet: bytes, data_length: int) -> Packet:
+def unpack(packet: bytes) -> Packet:
     return Packet(
-        source_address=as_int(packet[:ADDRESS_LEN - 1]),
-        destination_address=as_int(packet[ADDRESS_LEN:2*ADDRESS_LEN - 1]),
-        data=packet[2*ADDRESS_LEN:2*ADDRESS_LEN + data_length],
-        original_fcs=packet[2*ADDRESS_LEN + data_length:],
-        calculated_fcs=as_bytes(list(hamming_code(as_bits(packet[2*ADDRESS_LEN:2*ADDRESS_LEN + data_length]))))
+        source_address=as_int(packet[:ADDRESS_LEN]),
+        destination_address=as_int(packet[ADDRESS_LEN:2*ADDRESS_LEN]),
+        data=packet[2*ADDRESS_LEN:2*ADDRESS_LEN + MAX_DATA_LENGTH],
+        original_fcs=packet[2*ADDRESS_LEN + MAX_DATA_LENGTH:]
     )
 
 
@@ -163,6 +186,6 @@ def beautiful_print(prefix, *args):
 
 
 def beautiful_bits(bits: list[bool]) -> str:
-    return ''.join(map(lambda x: '01'[x], bits))
+    return re.sub(r'(\d{8})(\d{8})', lambda m: f'\n\t{m[1]} {m[2]}', ''.join(map(lambda x: '01'[x], bits)))
     
 

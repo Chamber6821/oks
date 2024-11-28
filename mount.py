@@ -12,22 +12,19 @@ def make_bridge(side1: str, side2: str):
 
 
 bridges = [
-    make_bridge('from_1', 'to_2'),
-    make_bridge('from_2', 'to_3'),
-    make_bridge('from_3', 'to_1'),
+    make_bridge('0_out', '1_in'),
+    make_bridge('1_out', '2_in'),
+    make_bridge('2_out', '3_in'),
+    make_bridge('3_out', '0_in'),
 ]
 
 try:
     os.system(r'''
-    tmux new "./transmitter.py from_1" \; \
-    split -h -p 67 "./transmitter.py from_2" \; \
-    split -h "./transmitter.py from_3" \; \
+    tmux new "./station.py 0 master" \; \
+    split -h "./station.py 2" \; \
+    split -h "./station.py 3" \; \
     selectp -t 0 \; \
-    split "./receiver.py to_1" \; \
-    selectp -t 2 \; \
-    split "./receiver.py to_2" \; \
-    selectp -t 4 \; \
-    split "./receiver.py to_3" \; \
+    split -h "./station.py 1" \; \
     selectp -t 0 \; \
     ''')
 finally:
